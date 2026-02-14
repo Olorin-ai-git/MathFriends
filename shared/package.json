@@ -1,0 +1,8 @@
+{
+  "name": "@mathfriends/shared",
+  "version": "1.0.0",
+  "description": "Shared types and utilities",
+  "private": true,
+  "main": "./src/types/problems.ts",
+  "types": "./src/types/problems.ts"
+}
