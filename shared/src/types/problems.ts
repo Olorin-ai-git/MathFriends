@@ -1,7 +1,13 @@
-export type Difficulty = 'superEasy' | 'easy' | 'medium' | 'hard' | 'extreme';
+export type Difficulty =
+  | "superEasy"
+  | "easy"
+  | "comparison"
+  | "medium"
+  | "hard"
+  | "extreme";
 
 export const MAX_ATTEMPTS_PER_PROBLEM = 5;
-export type Operation = '+' | '-' | '*' | '/' | '^';
+export type Operation = "+" | "-" | "*" | "/" | "^";
 
 export interface BasicProblem {
   id: string;
@@ -17,7 +23,17 @@ export interface EquationProblem {
   id: string;
   equation: string;
   answer: number;
-  difficulty: 'hard' | 'extreme';
+  difficulty: "hard" | "extreme";
+}
+
+export interface ComparisonProblem {
+  id: string;
+  expression: string;
+  expressionResult: number;
+  comparisonNumber: number;
+  answer: number; // 0 = less than, 1 = greater than, 2 = equal to
+  difficulty: "comparison";
+  display: string;
 }
 
 export interface SystemEquationProblem {
@@ -26,10 +42,14 @@ export interface SystemEquationProblem {
   equation2: string;
   answerX: number;
   answerY: number;
-  difficulty: 'extreme';
+  difficulty: "extreme";
 }
 
-export type Problem = BasicProblem | EquationProblem | SystemEquationProblem;
+export type Problem =
+  | BasicProblem
+  | ComparisonProblem
+  | EquationProblem
+  | SystemEquationProblem;
 
 export interface ValidationRequest {
   problemId: string;
@@ -53,6 +73,10 @@ export interface PracticeStats {
       correct: number;
     };
     easy: {
+      attempted: number;
+      correct: number;
+    };
+    comparison: {
       attempted: number;
       correct: number;
     };

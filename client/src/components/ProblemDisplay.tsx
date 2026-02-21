@@ -1,23 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { Problem, MAX_ATTEMPTS_PER_PROBLEM } from '../../../shared/src/types/problems';
-import { usePracticeSession } from '../hooks/usePracticeSession';
+import React, { useState, useEffect } from "react";
+import {
+  Problem,
+  MAX_ATTEMPTS_PER_PROBLEM,
+} from "../../../shared/src/types/problems";
+import { usePracticeSession } from "../hooks/usePracticeSession";
 
 interface ProblemDisplayProps {
   problem: Problem;
 }
 
 export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({ problem }) => {
-  const { submitAnswer, isLoading, attemptsRemaining, feedback } = usePracticeSession();
-  const [userAnswer, setUserAnswer] = useState('');
-  const [userAnswerY, setUserAnswerY] = useState('');
+  const { submitAnswer, isLoading, attemptsRemaining, feedback } =
+    usePracticeSession();
+  const [userAnswer, setUserAnswer] = useState("");
+  const [userAnswerY, setUserAnswerY] = useState("");
 
-  const isBasicProblem = 'operation' in problem;
-  const isSystemEquation = 'equation1' in problem;
-  const inputDisabled = isLoading || (feedback?.correct) || (feedback?.outOfAttempts);
+  const isBasicProblem = "operation" in problem;
+  const isComparisonProblem = "comparisonNumber" in problem;
+  const isSystemEquation = "equation1" in problem;
+  const inputDisabled =
+    isLoading || feedback?.correct || feedback?.outOfAttempts;
 
   useEffect(() => {
-    setUserAnswer('');
-    setUserAnswerY('');
+    setUserAnswer("");
+    setUserAnswerY("");
   }, [problem.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,6 +41,11 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({ problem }) => {
     }
   };
 
+  const handleComparisonChoice = async (choice: number) => {
+    if (inputDisabled) return;
+    await submitAnswer(choice);
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserAnswer(e.target.value);
   };
@@ -49,13 +60,26 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({ problem }) => {
               <div
                 key={i}
                 className={`w-3 h-3 rounded-full ${
-                  i < attemptsRemaining ? 'bg-blue-500' : 'bg-gray-300'
+                  i < attemptsRemaining ? "bg-blue-500" : "bg-gray-300"
                 }`}
               />
             ))}
           </div>
         </div>
-        {isBasicProblem ? (
+        {isComparisonProblem ? (
+          <div className="text-center mb-2">
+            <p className="text-2xl text-gray-600 mb-3">Is</p>
+            <div className="text-5xl font-bold text-teal-600 mb-3">
+              {(problem as any).comparisonNumber}
+            </div>
+            <p className="text-2xl text-gray-600 mb-3">
+              greater than, less than, or equal to
+            </p>
+            <div className="text-5xl font-bold text-gray-800">
+              {(problem as any).expression} ?
+            </div>
+          </div>
+        ) : isBasicProblem ? (
           <div className="text-5xl font-bold text-gray-800 text-center mb-2">
             {(problem as any).display}
           </div>
@@ -75,52 +99,86 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({ problem }) => {
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        {isSystemEquation ? (
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-600 mb-1">x =</label>
-              <input
-                type="number"
-                value={userAnswer}
-                onChange={handleInputChange}
-                placeholder="Value of x"
-                disabled={!!inputDisabled}
-                autoFocus
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg disabled:bg-gray-100"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-600 mb-1">y =</label>
-              <input
-                type="number"
-                value={userAnswerY}
-                onChange={(e) => setUserAnswerY(e.target.value)}
-                placeholder="Value of y"
-                disabled={!!inputDisabled}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg disabled:bg-gray-100"
-              />
-            </div>
-          </div>
-        ) : (
-          <input
-            type="number"
-            value={userAnswer}
-            onChange={handleInputChange}
-            placeholder="Enter your answer"
+      {isComparisonProblem ? (
+        <div className="flex gap-4">
+          <button
+            onClick={() => handleComparisonChoice(1)}
             disabled={!!inputDisabled}
-            autoFocus
-            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg disabled:bg-gray-100"
-          />
-        )}
-        <button
-          type="submit"
-          disabled={!!inputDisabled || !userAnswer || (isSystemEquation && !userAnswerY)}
-          className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
-        >
-          {isLoading ? 'Checking...' : 'Submit'}
-        </button>
-      </form>
+            className="flex-1 px-6 py-4 bg-green-500 text-white text-xl font-bold rounded-lg hover:bg-green-600 disabled:bg-gray-400 transition-colors"
+          >
+            Greater Than &gt;
+          </button>
+          <button
+            onClick={() => handleComparisonChoice(2)}
+            disabled={!!inputDisabled}
+            className="flex-1 px-6 py-4 bg-blue-500 text-white text-xl font-bold rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-colors"
+          >
+            Equal To =
+          </button>
+          <button
+            onClick={() => handleComparisonChoice(0)}
+            disabled={!!inputDisabled}
+            className="flex-1 px-6 py-4 bg-orange-500 text-white text-xl font-bold rounded-lg hover:bg-orange-600 disabled:bg-gray-400 transition-colors"
+          >
+            Less Than &lt;
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          {isSystemEquation ? (
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  x =
+                </label>
+                <input
+                  type="number"
+                  value={userAnswer}
+                  onChange={handleInputChange}
+                  placeholder="Value of x"
+                  disabled={!!inputDisabled}
+                  autoFocus
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg disabled:bg-gray-100"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  y =
+                </label>
+                <input
+                  type="number"
+                  value={userAnswerY}
+                  onChange={(e) => setUserAnswerY(e.target.value)}
+                  placeholder="Value of y"
+                  disabled={!!inputDisabled}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg disabled:bg-gray-100"
+                />
+              </div>
+            </div>
+          ) : (
+            <input
+              type="number"
+              value={userAnswer}
+              onChange={handleInputChange}
+              placeholder="Enter your answer"
+              disabled={!!inputDisabled}
+              autoFocus
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg disabled:bg-gray-100"
+            />
+          )}
+          <button
+            type="submit"
+            disabled={
+              !!inputDisabled ||
+              !userAnswer ||
+              (isSystemEquation && !userAnswerY)
+            }
+            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+          >
+            {isLoading ? "Checking..." : "Submit"}
+          </button>
+        </form>
+      )}
     </div>
   );
 };
